@@ -73,21 +73,29 @@ public class IA_AlgoritmoGenetico {
         
     }
     
-    public static boolean hayZombies(){
+    public static boolean hayZombies(int fila){
         int z;
-        for (z=0; z<Z; z++)
-            if (Zombies.get(z).vida > 0)
+        for (z=0; z<Z; z++){
+            if (Zombies.get(z).fila == fila && Zombies.get(z).vida >0){
+                
                 return true;
+            }
+        }
+        System.out.println("Ganarron las plantas");        
         return false;
     }
     
     //Se puede hacer como puso monascal en el pdf, Los zombies ganan si logran llegar a cualquier coordenada entre (1,1) y (1,H).
-    public static boolean zombiesWin(int ind){
+    public static boolean zombiesWin(int fila){
         int i;
-        for (i=0; i<4; i++)
-            if (Poblacion.get(ind).cromosoma[i] != 1)
-                return false;
-        return true;
+        for (i=0; i<Z; i++){
+           if (Zombies.get(i).fila == fila && Zombies.get(i).columna == -1){
+            System.out.println("Ganarron los zombies");
+             return true;
+            } 
+        }
+ 
+        return false;
     }
     
     public static boolean canShootRepeater(int ind, int planta){
@@ -98,12 +106,16 @@ public class IA_AlgoritmoGenetico {
         return true;
     }
     
-    public static void simulacion(int ind, int fila){
+    public static void simulacion(int ind, int fila, List<Zombie> ZombiesFila){
         int i,z;
+        List<Zombie> ZombiesFilaMovimiento = new ArrayList<Zombie>();  //Donde se guardan los zombies que ya estan en el tablero
+        //Individuo que estamos probando de la poblacion
         for (i=0; i<4; i++)
             System.out.print(Poblacion.get(ind).cromosoma[i]+ " ");
         System.out.print("\n");
-        while(hayZombies() && !zombiesWin(ind)){
+        
+        while(hayZombies(fila) && !zombiesWin(fila)){
+             System.out.println("Continuar simulacion");
             //Plantas disparan y aumentar contador(aptitud) de daño causado de planta
             for (i=0; i<4; i++){
                 for (z=0; z<Z; z++)
@@ -143,12 +155,13 @@ public class IA_AlgoritmoGenetico {
             }
             //Zombies caminan
             for (z=0; z<Z; z++)
-                if (Zombies.get(z).fila == fila && Zombies.get(z).columna != 0 && Zombies.get(z).columna != -1 && Zombies.get(z).vida > 0)
+                if (Zombies.get(z).fila == fila && Zombies.get(z).columna != -1 && Zombies.get(z).vida > 0){
                     Zombies.get(z).moverse();
-                       
+                }
+   
             //Nuevo zombie entra
             for (z=0; z<Z; z++)
-                if (Zombies.get(z).fila == fila && Zombies.get(z).columna == -1){
+                if (Zombies.get(z).fila == fila){
                     Zombies.get(z).setColumna(W-1);
                     break;
                 }
@@ -175,13 +188,20 @@ public class IA_AlgoritmoGenetico {
             if (i==0)
                 zombito = new Zombie(ZF,ZV,W-1);
             else
-                zombito = new Zombie(ZF,ZV); 
+                zombito = new Zombie(ZF,ZV,W); 
             
             Zombies.add(zombito); //Añadimos el zombie número i 
         } 
         
         inicializarPoblacion();
-        simulacion(0,2);
+        List<Zombie> ZombiesFila = new ArrayList<Zombie>();
+        for (int j=0; j<Z; j++){
+            if(Zombies.get(j).fila == 0){
+                ZombiesFila.add(Zombies.get(j));   
+            }
+        }
+        simulacion(0,2, ZombiesFila);
+        Poblacion.get(0).imprimirEstadisticas();
         System.out.print("todo fine");
         //algoritmoGenetico();
        
@@ -213,10 +233,14 @@ class Zombie{
     }
     public void moverse(){
         this.columna -= 1;
+        System.out.println("el zombie se movio a la columna: "+this.columna );
+       
         
     }
     public void setColumna(int columna){
+       
         this.columna = columna;
+         System.out.println("entro el zombie en la columna: "+this.columna );
     }
     
 }
@@ -245,8 +269,15 @@ class Individuo{
     }
     
     public void killPlanta(int i){
-        this.cromosoma[i] = 1;
+        this.cromosoma[i] = 0;
         this.aptitud = 0;
+        System.out.println("matamos una planta");
+    }
+    public void imprimirEstadisticas (){
+        for (int i =0; i<4; i++){
+           System.out.println("la planta: "+ this.cromosoma[i]);
+           System.out.println("tiene una aptitud: "+this.aptitud );
+        }   
     }
     
 }
