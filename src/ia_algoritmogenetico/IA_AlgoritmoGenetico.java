@@ -108,7 +108,6 @@ public class IA_AlgoritmoGenetico {
     
     public static void simulacion(int ind, int fila, List<Zombie> ZombiesFila){
         int i,z;
-        List<Zombie> ZombiesFilaMovimiento = new ArrayList<Zombie>();  //Donde se guardan los zombies que ya estan en el tablero
         //Individuo que estamos probando de la poblacion
         for (i=0; i<4; i++)
             System.out.print(Poblacion.get(ind).cromosoma[i]+ " ");
@@ -118,12 +117,12 @@ public class IA_AlgoritmoGenetico {
              System.out.println("Continuar simulacion");
             //Plantas disparan y aumentar contador(aptitud) de daño causado de planta
             for (i=0; i<4; i++){
-                for (z=0; z<Z; z++)
-                    if (Zombies.get(z).fila == fila && Zombies.get(z).columna != -1 && Zombies.get(z).vida > 0){
+                for (z=0; z<ZombiesFila.size(); z++)
+                    if (ZombiesFila.get(z).fila == fila && ZombiesFila.get(z).columna != -1 && ZombiesFila.get(z).vida > 0){
                         switch (Poblacion.get(ind).cromosoma[i]) {
                             case 2:
-                               if (Zombies.get(z).columna != i){        
-                                    Zombies.get(z).setVida(1);
+                               if (ZombiesFila.get(z).columna != i){        
+                                    ZombiesFila.get(z).setVida(1);
                                     Poblacion.get(ind).setAptitud(1);
                                }
                                else
@@ -131,9 +130,9 @@ public class IA_AlgoritmoGenetico {
                                    Poblacion.get(ind).killPlanta(i);
                                 break;
                             case 3:
-                                if (Zombies.get(z).columna != i){
+                                if (ZombiesFila.get(z).columna != i){
                                     if (canShootRepeater(ind,i)){
-                                        Zombies.get(z).setVida(2);
+                                        ZombiesFila.get(z).setVida(2);
                                         Poblacion.get(ind).setAptitud(2);   
                                     }
                                 }
@@ -142,9 +141,9 @@ public class IA_AlgoritmoGenetico {
                                    Poblacion.get(ind).killPlanta(i);
                                 break;
                             case 4:
-                                if (Zombies.get(z).columna == i){
-                                    Zombies.get(z).setVida(Zombies.get(z).vida);
-                                    Poblacion.get(ind).setAptitud(Zombies.get(z).vida);
+                                if (ZombiesFila.get(z).columna == i){
+                                    ZombiesFila.get(z).setVida(ZombiesFila.get(z).vida);
+                                    Poblacion.get(ind).setAptitud(ZombiesFila.get(z).vida);
                                 }
                                 break;
                             default:
@@ -154,15 +153,15 @@ public class IA_AlgoritmoGenetico {
                     }
             }
             //Zombies caminan
-            for (z=0; z<Z; z++)
-                if (Zombies.get(z).fila == fila && Zombies.get(z).columna != -1 && Zombies.get(z).vida > 0){
-                    Zombies.get(z).moverse();
+            for (z=0; z<ZombiesFila.size(); z++)
+                if (ZombiesFila.get(z).fila == fila && ZombiesFila.get(z).columna != W  && ZombiesFila.get(z).columna != -1 && ZombiesFila.get(z).vida > 0){
+                    ZombiesFila.get(z).moverse();
                 }
    
             //Nuevo zombie entra
-            for (z=0; z<Z; z++)
-                if (Zombies.get(z).fila == fila){
-                    Zombies.get(z).setColumna(W-1);
+            for (z=0; z<ZombiesFila.size(); z++)
+                if (ZombiesFila.get(z).fila == fila && ZombiesFila.get(z).columna == W){
+                    ZombiesFila.get(z).setColumna(W-1);
                     break;
                 }
             
@@ -184,21 +183,21 @@ public class IA_AlgoritmoGenetico {
             Zombie zombito = new Zombie();
             ZF = consola.nextInt(); //fila en la que aparece
             ZV = consola.nextInt(); //vida que tiene
-            
-            if (i==0)
-                zombito = new Zombie(ZF,ZV,W-1);
-            else
-                zombito = new Zombie(ZF,ZV,W); 
-            
+            zombito = new Zombie(ZF,ZV,W); 
             Zombies.add(zombito); //Añadimos el zombie número i 
         } 
         
         inicializarPoblacion();
         List<Zombie> ZombiesFila = new ArrayList<Zombie>();
         for (int j=0; j<Z; j++){
-            if(Zombies.get(j).fila == 0){
+            if(Zombies.get(j).fila == 2){
                 ZombiesFila.add(Zombies.get(j));   
             }
+        }
+        ZombiesFila.get(0).columna --; //El primer Zombie se mete en el tablero 
+        for (int j=0; j<ZombiesFila.size(); j++){
+            System.out.println("Zombie id: "+ZombiesFila.get(j).id  +" Zombie FIla: "+ZombiesFila.get(j).fila  + " Zombie columna: "+ZombiesFila.get(j).columna  );   
+
         }
         simulacion(0,2, ZombiesFila);
         Poblacion.get(0).imprimirEstadisticas();
@@ -212,20 +211,23 @@ class Zombie{
     public int fila;
     public int columna;
     public int vida; 
-    
+    public int id;
     Zombie(){
         this.fila = 0;
         this.vida = 0;
         this.columna =-1;
+        this.id = (int) Math.round(IA_AlgoritmoGenetico.RamdonNumber(1000));
     }
     public Zombie(int fila, int vida){
         this.fila = fila;
         this.vida = vida;
+        this.id = (int) Math.round(IA_AlgoritmoGenetico.RamdonNumber(1000));
     }
     public Zombie(int fila, int vida, int columna){
         this.fila = fila;
         this.vida = vida;
         this.columna = columna;
+        this.id = (int) Math.round(IA_AlgoritmoGenetico.RamdonNumber(1000));
     }
     
     public void setVida(int cant){
@@ -233,12 +235,11 @@ class Zombie{
     }
     public void moverse(){
         this.columna -= 1;
-        System.out.println("el zombie se movio a la columna: "+this.columna );
+        System.out.println("el zombie "+this.id +" se movio a la columna: "+this.columna );
        
         
     }
     public void setColumna(int columna){
-       
         this.columna = columna;
          System.out.println("entro el zombie en la columna: "+this.columna );
     }
