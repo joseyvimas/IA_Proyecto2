@@ -14,8 +14,11 @@ public class IA_AlgoritmoGenetico {
     public static Individuo Jardin [][];  //Matriz que representa el Jardin
     public static List<Individuo> Poblacion = new ArrayList<Individuo>();  
     public static List<Individuo> Seleccion = new ArrayList<Individuo>();  
-    public static List<Zombie> Zombies = new ArrayList<Zombie>();  
-
+    public static List<Zombie> Zombies = new ArrayList<Zombie>();
+    public static int TamPoblacion = 6;
+    public static double ProbCruce = 0.7;
+    public static double ProbMuta = 0.01;
+    
     public static double RamdonNumber(int n){
         return (int) (Math.random() * n) + 1;
         
@@ -31,14 +34,14 @@ public class IA_AlgoritmoGenetico {
         return decimal;
     }
     public static void algoritmoGenetico (){
-        inicializarPoblacion();
+        /*inicializarPoblacion();
         //evaluarPoblacion();
         while(!solucion()){
             seleccionar();
             alterar();
             //evaluarPoblacion();
         }
-        return;
+        return;*/
     }
     public static int[] generarIndividuo (){
         int i;
@@ -50,9 +53,9 @@ public class IA_AlgoritmoGenetico {
     }
     
     public static void inicializarPoblacion (){
-        //Población de 5 individuos
+        //Población de 6 individuos
         int i;
-        for (i=0; i<5; i++){
+        for (i=0; i< TamPoblacion; i++){
             Individuo ind = new Individuo();
             ind = new Individuo(generarIndividuo());
             Poblacion.add(ind);
@@ -63,7 +66,7 @@ public class IA_AlgoritmoGenetico {
         List<Zombie> ZombiesFila = new ArrayList<Zombie>();
         List<Zombie> ZombiesCopy = new ArrayList<Zombie>(); 
         int i,j;
-        for (i=0; i<5; i++){
+        for (i=0; i< TamPoblacion; i++){
             ZombiesFila.clear();
             for (j=0; j<Z; j++){
                 if(Zombies.get(j).fila == fila){
@@ -85,16 +88,126 @@ public class IA_AlgoritmoGenetico {
             simulacion(i, ZombiesCopy);
         }
     }
-    public static boolean solucion (){
+    public static boolean solucion (int ZombieVidaFila){
+        //ZombieVidaFila tiene la suma de las vidas de todos los zombiez en la fila
+        for (int i=0; i<TamPoblacion;i++){
+            if(Poblacion.get(i).aptitud == ZombieVidaFila) return true;
+        }
         return false;
     }
     
     public static void seleccionar (){
+        double q0,q1,q2,q3,q4,q5;
+        //Calcular probabilidad total
+        int AptitudTotal =0, i;
+        for (i=0; i<Poblacion.size();i++ ){
+            AptitudTotal += Poblacion.get(i).aptitud;
+        }
+        System.out.println("AptitudTotal: "+ AptitudTotal);
+        //Calcular pi de cada individuo
+        for (i=0; i<Poblacion.size();i++ ){
+            System.out.println("Poblacion"+i +" : "+ Poblacion.get(i).aptitud);
+            Poblacion.get(i).pi = (float) Poblacion.get(i).aptitud / AptitudTotal;
+            System.out.println("Poblacion"+i +" : "+ Poblacion.get(i).pi);
+        }
+        //Obtener los qi
+        q0 = Poblacion.get(0).pi;
+        q1 = q0 +Poblacion.get(1).pi;
+        q2 = q1 + Poblacion.get(2).pi;
+        q3 = q2 + Poblacion.get(3).pi;
+        q4 = q3 + Poblacion.get(4).pi;
+        q5 = q4 + Poblacion.get(5).pi;
         
+        System.out.println("q0: "+ q0);
+        System.out.println("q1: "+ q1);
+        System.out.println("q2: "+ q2);
+        System.out.println("q3: "+ q3);
+        System.out.println("q4: "+ q4);
+        System.out.println("q5: "+ q5);
+        
+        //Obtener los valores ramdon del a y seleccionar que individuos escojer
+        List<Individuo> PoblacionSeleccionada = new ArrayList<Individuo>(); 
+        for (i=0; i< TamPoblacion; i++){
+            //ramdon a
+            double a = Math.random();
+            System.out.println("Salio el a: " + a);
+            if(a>=0 && a <q0){
+                //individuo 0
+                PoblacionSeleccionada.add(Poblacion.get(0));
+            }
+            else if(q0>=0 && a <q1){
+                //individuo 1
+                PoblacionSeleccionada.add(Poblacion.get(1));
+            }
+            else if(q1>=0 && a <q2){
+                //individuo 2
+                PoblacionSeleccionada.add(Poblacion.get(2));
+            }
+            else if(q2>=0 && a <q3){
+                //individuo 3
+                PoblacionSeleccionada.add(Poblacion.get(3));
+            }
+            else if(q3>=0 && a <q4){
+                //individuo 4
+                PoblacionSeleccionada.add(Poblacion.get(4));
+            }
+            else if(q4>=0 && a <q5){
+                //individuo 5
+                PoblacionSeleccionada.add(Poblacion.get(5));
+            }
+            
+        }
+        //Ya en poblacion seleccionada estan los seleccionados y limpiamos la poblacion vieja
+        Poblacion.clear();
+        //Agregar Poblacion seleccionada a Poblacion
+        for(i=0; i< TamPoblacion; i++){
+            Poblacion.add(PoblacionSeleccionada.get(i));
+        }
+        //borrar variable auxiliar
+        PoblacionSeleccionada.clear();
     }
     
     public static void alterar (){
+        //Primero ver cruce
+        int i;
+        double pc, pm;
+        List<Individuo> PoblacionParaCruzar = new ArrayList<Individuo>(); 
+        //Obtener los valores ramdon de cruce y seleccionar que individuos cruzar
+        for (i=0;i<TamPoblacion;i++){
+            pc= Math.random();
+            if(pc <= ProbCruce){
+                //Agregar a lista de poblaciona cruzar
+                PoblacionParaCruzar.add(Poblacion.get(i));
+                Poblacion.remove(i);
+            }
+        }
+        //Verificar paridad de individuos en caso de impar uno al azar no se cruza
+        if(PoblacionParaCruzar.size()%2 == 1){
+            int ind = (int) Math.round(RamdonNumber(PoblacionParaCruzar.size()));
+            Poblacion.add(PoblacionParaCruzar.get(ind));
+            PoblacionParaCruzar.remove(ind);
+        }
+        //Ahora aplicar cruces 
         
+        //verificar que tamaño sea mayor a 0
+        while( PoblacionParaCruzar.size()!=0){
+            //seleccionar 2 individuos ramdon
+        }
+ 
+        //Ahora intentar mutacion
+        for (i=0;i<TamPoblacion;i++){
+            for(int j=0; j<4;j++){
+                pm= Math.random();
+                if(pm <= ProbMuta){
+                    int plantaMutada = (int) Math.round(RamdonNumber(4));
+                    //Verificar que mutacion no sea la misma que ya esta
+                    while(plantaMutada == Poblacion.get(i).cromosoma[j]){
+                        plantaMutada = (int) Math.round(RamdonNumber(4));
+                    }
+                    Poblacion.get(i).cromosoma[j]=plantaMutada;
+                }    
+            }
+        }
     }
     
     public static void infoZombies(List<Zombie> Zombies){
@@ -199,7 +312,6 @@ public class IA_AlgoritmoGenetico {
                     ZombiesFila.get(z).setColumna(W-1);
                     break;
                 }
-            
         }
     }
     
@@ -232,7 +344,11 @@ public class IA_AlgoritmoGenetico {
         inicializarPoblacion();
         evaluarPoblacion(2);
         
-        Poblacion.get(0).imprimirEstadisticas();
+        for(i=0;i< Poblacion.size();i++){
+            System.out.println("Poblacion "+i+" esta es la aptitud "+ Poblacion.get(i).aptitud) ;
+        }
+        seleccionar();
+        //Poblacion.get(0).imprimirEstadisticas();
         //algoritmoGenetico();
        
     }    
@@ -284,16 +400,19 @@ class Individuo{
     public int cromosoma[];
     public boolean alive[];
     public int aptitud;
+    public float pi;
     
     Individuo(){
         this.cromosoma = new int[4]; 
         this.alive = new boolean[4];
         this.aptitud = 0;
+        this.pi = 0;
     }
     Individuo(int fila[]){
         this.cromosoma = new int[4]; 
         this.alive = new boolean[4];
         this.aptitud = 0;
+        this.pi = 0;
         
         int x;
         for (x=0;x<4;x++){
