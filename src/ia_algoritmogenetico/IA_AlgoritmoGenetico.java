@@ -64,9 +64,9 @@ public class IA_AlgoritmoGenetico {
         List<Zombie> ZombiesCopy = new ArrayList<Zombie>(); 
         int i,j;
         for (i=0; i<5; i++){
+            ZombiesFila.clear();
             for (j=0; j<Z; j++){
                 if(Zombies.get(j).fila == fila){
-                    ZombiesFila.clear();
                     ZombiesFila.add(Zombies.get(j)); 
                 }
             }
