@@ -61,20 +61,22 @@ public class IA_AlgoritmoGenetico {
    
     public static void evaluarPoblacion (int fila){
         List<Zombie> ZombiesFila = new ArrayList<Zombie>();
+        List<Zombie> ZombiesCopy = new ArrayList<Zombie>(); 
         int i,j;
         for (i=0; i<5; i++){
             for (j=0; j<Z; j++){
                 if(Zombies.get(j).fila == fila){
-                    ZombiesFila.add(Zombies.get(j));   
+                    ZombiesFila.clear();
+                    ZombiesFila.add(Zombies.get(j)); 
                 }
             }
             if (ZombiesFila.size() == 0) return;  //Si no hay zombies en dicha fila, retornamos
             
             //Copiamos el arreglo de los zombies de la fila determinada para que no sea haga referencia a la misma lista ZombiesFila
-            List<Zombie> ZombiesCopy = new ArrayList<Zombie>(); 
+            ZombiesCopy.clear();
             ZombiesCopy = cloneList(ZombiesFila);
-
-            ZombiesCopy.get(0).columna --; //El primer Zombie se mete en el tablero
+            
+            ZombiesCopy.get(0).columna--; //El primer Zombie se mete en el tablero
 
             /*for (j=0; j<ZombiesCopy.size(); j++){
                 System.out.println("Zombie id: "+ZombiesCopy.get(j).id  +" Zombie FIla: "+ZombiesCopy.get(j).fila  + " Zombie columna: "+ZombiesCopy.get(j).columna  );   
@@ -97,7 +99,7 @@ public class IA_AlgoritmoGenetico {
     
     public static void infoZombies(List<Zombie> Zombies){
         int z; 
-        for (z=0; z<Z; z++){
+        for (z=0; z<Zombies.size(); z++){
             System.out.println("ID: " + Zombies.get(z).id);
             System.out.println("Fila: " + Zombies.get(z).fila);
             System.out.println("Columna: " + Zombies.get(z).columna);
@@ -107,7 +109,7 @@ public class IA_AlgoritmoGenetico {
     
     public static boolean hayZombies(List<Zombie> ZombiesFila){
         int z;
-        for (z=0; z<Z; z++){
+        for (z=0; z<ZombiesFila.size(); z++){
             if (ZombiesFila.get(z).vida > 0){
                 return true;
             }
@@ -119,7 +121,7 @@ public class IA_AlgoritmoGenetico {
     //Se puede hacer como puso monascal en el pdf, Los zombies ganan si logran llegar a cualquier coordenada entre (1,1) y (1,H).
     public static boolean zombiesWin(List<Zombie> ZombiesFila){
         int i;
-        for (i=0; i<Z; i++){
+        for (i=0; i<ZombiesFila.size(); i++){
            if (ZombiesFila.get(i).columna == -1){
             System.out.println("Ganaron los zombies");
              return true;
