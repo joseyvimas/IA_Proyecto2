@@ -7,6 +7,7 @@ import java.util.*;
  * Josue G. Sanchez 24.757.111
  * José G. Yvimas 23.712.348
  */
+
 public class IA_AlgoritmoGenetico {
     public static int W; //Columnas del jardín
     public static int H; //Filas del jardín
@@ -23,16 +24,6 @@ public class IA_AlgoritmoGenetico {
         return (int) (Math.random() * n) + 1;
         
     }
-    public static int binaryToDecimal(int number []) {
-        int decimal = 0;
-        int tam = number.length;
-        int power = tam-1;
-        for (int i =0; i<tam ; i++){
-            decimal += number[i]* Math.pow(2, power);
-            power--;
-        }
-        return decimal;
-    }
     public static void algoritmoGenetico (int ZombieVidaFila, int nrofila){
         int iteracion =0;
         inicializarPoblacion();
@@ -43,13 +34,12 @@ public class IA_AlgoritmoGenetico {
             evaluarPoblacion(nrofila);
             iteracion++;
         }
-        return;
     }
     public static int[] generarIndividuo (){
         int i;
         int fila [] = new int[4];
         for(i=0; i<4; i++)
-            fila[i] = (int) Math.round(RamdonNumber(4));
+            fila[i] = (int) Math.round(RamdonNumber(4))-1;
        
         return fila;
     }
@@ -66,7 +56,7 @@ public class IA_AlgoritmoGenetico {
         
         for (i=0; i< TamPoblacion; i++){
             for(int j=0; j<4;j++){
-                if(Poblacion.get(i).cromosoma[j] !=1){
+                if(Poblacion.get(i).cromosoma[j] !=0){
                     return;
                 }
             }     
@@ -88,12 +78,6 @@ public class IA_AlgoritmoGenetico {
             if (ZombiesFila.isEmpty()) return;  //Si no hay zombies en dicha fila, retornamos
             
             ZombiesFila.get(0).columna--; //El primer Zombie se mete en el tablero
-               
-            /*System.out.println("zombies simulacion individuo "+i+":");
-            for (j=0; j<ZombiesCopy.size(); j++){
-                System.out.println("Zombie id: "+ZombiesCopy.get(j).vida  +" Zombie FIla: "+ZombiesCopy.get(j).fila  + " Zombie columna: "+ZombiesCopy.get(j).columna  );   
-
-            }*/
             
             simulacion(i, ZombiesFila);
         }
@@ -104,17 +88,27 @@ public class IA_AlgoritmoGenetico {
         nrofila -= 1;
         for (i=0; i<TamPoblacion;i++){
             if(Poblacion.get(i).aptitud == ZombieVidaFila){
-                for(j=0; j<4; j++){
+                for(j=0; j<4; j++)
                     Jardin[nrofila][j] = Poblacion.get(i).cromosoma[j];
-                }
+                
                 return true;
             }
         }
-        if(iteracion==26) {
-            //Caso limite ponla como sulocuin y prende el flag
+        if(iteracion==200) {
+            //Caso limite se pone el "mejor" individuo  como solución y prende el flag
+            int mejor = -1;
+            for (i=0; i<TamPoblacion;i++){
+                if (Poblacion.get(i).aptitud > mejor){
+                    for(j=0; j<4; j++)
+                        Jardin[nrofila][j] = Poblacion.get(i).cromosoma[j];
+                    
+                    mejor = Poblacion.get(i).aptitud;
+                }
+            }
             MalaSolucion =true;
             return true;
         }
+        
         return false;
     }
     
@@ -123,17 +117,14 @@ public class IA_AlgoritmoGenetico {
         //Calcular probabilidad total
         int AptitudTotal =0, i;
         
-        //EVALUAR EL CASO SI LLEGA A DAR CERO***FALTA***
         for (i=0; i<Poblacion.size();i++ ){
             AptitudTotal += Poblacion.get(i).aptitud;
         }
-       // System.out.println("AptitudTotal: "+ AptitudTotal);
         //Calcular pi de cada individuo
         for (i=0; i<Poblacion.size();i++ ){
-           // System.out.println("Poblacion"+i +" : "+ Poblacion.get(i).aptitud);
             Poblacion.get(i).pi = (float) Poblacion.get(i).aptitud / AptitudTotal;
-            //System.out.println("Poblacion"+i +" : "+ Poblacion.get(i).pi);
         }
+        
         //Obtener los qi
         q0 = Poblacion.get(0).pi;
         q1 = q0 +Poblacion.get(1).pi;
@@ -142,12 +133,6 @@ public class IA_AlgoritmoGenetico {
         q4 = q3 + Poblacion.get(4).pi;
         q5 = q4 + Poblacion.get(5).pi;
         
-       /* System.out.println("q0: "+ q0);
-        System.out.println("q1: "+ q1);
-        System.out.println("q2: "+ q2);
-        System.out.println("q3: "+ q3);
-        System.out.println("q4: "+ q4);
-        System.out.println("q5: "+ q5);*/
         
         //Obtener los valores ramdon del a y seleccionar que individuos escojer
         List<Individuo> PoblacionSeleccionada = new ArrayList<Individuo>();
@@ -233,9 +218,7 @@ public class IA_AlgoritmoGenetico {
                 ind1 = (int) Math.round(RamdonNumber(PoblacionParaCruzar.size()))-1;
                 ind2 = (int) Math.round(RamdonNumber(PoblacionParaCruzar.size()))-1;
             }
-            
-         
-            
+               
             for (j=0; j<puntoCruce; j++){ //Cruce
                 aux = PoblacionParaCruzar.get(ind1).cromosoma[j];
                 PoblacionParaCruzar.get(ind1).cromosoma[j] = PoblacionParaCruzar.get(ind2).cromosoma[j];
@@ -255,27 +238,16 @@ public class IA_AlgoritmoGenetico {
             }
         }
         
-        /* OTRA FORMA
-        for(i=0; i<PoblacionParaCruzar.size(); i=i+2){
-            for (j=0; j<puntoCruce; j++){ //Cruce
-                aux = PoblacionParaCruzar.get(i).cromosoma[j];
-                PoblacionParaCruzar.get(i).cromosoma[j] = PoblacionParaCruzar.get(i+1).cromosoma[j];
-                PoblacionParaCruzar.get(i+1).cromosoma[j] = aux;
-            }
-            Poblacion.add(PoblacionParaCruzar.get(i));
-            Poblacion.add(PoblacionParaCruzar.get(i+1));
-        }
-        */
         //Ahora intentar mutacion
         int plantaMutada;
         for (i=0;i<TamPoblacion;i++){
             for(j=0; j<4;j++){
                 pm= Math.random();
                 if(pm <= ProbMuta){
-                    plantaMutada = (int) Math.round(RamdonNumber(4));
+                    plantaMutada = (int) Math.round(RamdonNumber(4))-1;
                     //Verificar que mutacion no sea la misma que ya esta
                     while(plantaMutada == Poblacion.get(i).cromosoma[j]){
-                        plantaMutada = (int) Math.round(RamdonNumber(4));
+                        plantaMutada = (int) Math.round(RamdonNumber(4))-1;
                     }
                     Poblacion.get(i).cromosoma[j]=plantaMutada;
                 }    
@@ -296,24 +268,16 @@ public class IA_AlgoritmoGenetico {
     
     public static boolean hayZombies(List<Zombie> ZombiesFila){
         int z;
-        for (z=0; z<ZombiesFila.size(); z++){
-            if (ZombiesFila.get(z).vida > 0){
-                return true;
-            }
-        }
-       // System.out.println("Ganaron las plantas");        
+        for (z=0; z<ZombiesFila.size(); z++)
+            if (ZombiesFila.get(z).vida > 0) return true;
+          
         return false;
     }
     
-    //Se puede hacer como puso monascal en el pdf, Los zombies ganan si logran llegar a cualquier coordenada entre (1,1) y (1,H).
     public static boolean zombiesWin(List<Zombie> ZombiesFila){
         int i;
-        for (i=0; i<ZombiesFila.size(); i++){
-           if (ZombiesFila.get(i).columna == -1){
-            //    System.out.println("Ganaron los zombies");
-                return true;
-            } 
-        }
+        for (i=0; i<ZombiesFila.size(); i++)
+           if (ZombiesFila.get(i).columna == -1) return true;
  
         return false;
     }
@@ -321,26 +285,20 @@ public class IA_AlgoritmoGenetico {
     public static boolean canShootRepeater(int ind, int planta){
         int i;
         for (i=planta+1; i<4; i++)
-            if (Poblacion.get(ind).cromosoma[i] == 2 || Poblacion.get(ind).cromosoma[i] == 3)
+            if (Poblacion.get(ind).cromosoma[i] == 1 || Poblacion.get(ind).cromosoma[i] == 2)
                 return false;
         return true;
     }
     
     public static void simulacion(int ind, List<Zombie> ZombiesFila){
         int i,z;
-        //Individuo que estamos probando de la poblacion
-        /*for (i=0; i<4; i++)
-            System.out.print(Poblacion.get(ind).cromosoma[i]+ " ");
-        System.out.print("\n");*/
-        
+         
         while(hayZombies(ZombiesFila) && !zombiesWin(ZombiesFila)){
-            //System.out.println("Se hizo simulacion");
-            
             //Verificar si los zombies pueden atacar
             int columna;
             for (z=0; z<ZombiesFila.size(); z++){
                 columna = ZombiesFila.get(z).columna;
-                if ((columna >= 0 && columna < 4) && (Poblacion.get(ind).cromosoma[columna] == 2 || Poblacion.get(ind).cromosoma[columna] == 3))
+                if ((columna >= 0 && columna < 4) && (Poblacion.get(ind).cromosoma[columna] == 1 || Poblacion.get(ind).cromosoma[columna] == 2))
                     Poblacion.get(ind).killPlanta(columna); //Zombie ataca
                 
             }
@@ -351,13 +309,13 @@ public class IA_AlgoritmoGenetico {
                     for (z=0; z<ZombiesFila.size(); z++)
                         if (ZombiesFila.get(z).columna != W && ZombiesFila.get(z).vida > 0){
                             switch (Poblacion.get(ind).cromosoma[i]) {
-                                case 2:
+                                case 1:
                                    if (ZombiesFila.get(z).columna != i){        
                                         ZombiesFila.get(z).setVida(1);
                                         Poblacion.get(ind).setAptitud(1);
                                    }
                                    break;
-                                case 3:
+                                case 2:
                                     if (ZombiesFila.get(z).columna != i){
                                         if (canShootRepeater(ind,i)){
                                             if(ZombiesFila.get(z).vida==1){
@@ -378,7 +336,7 @@ public class IA_AlgoritmoGenetico {
                                         }
                                     }
                                     break;
-                                case 4:
+                                case 3:
                                     if (ZombiesFila.get(z).columna == i){
                                         Poblacion.get(ind).setAptitud(ZombiesFila.get(z).vida);
                                         ZombiesFila.get(z).setVida(ZombiesFila.get(z).vida);
@@ -446,24 +404,13 @@ public class IA_AlgoritmoGenetico {
         }
         
         //IMPRIMIR SOLUCION
-        if(MalaSolucion) System.out.println("No se encontro una solucion al problema inicial pero esta es una aproximacion a la solucion");
+        if(MalaSolucion) System.out.println("No se encontró una solución al problema inicial, pero esta es una aproximación a la solución");
         int j;
         for (i=0; i<H; i++){
             for (j=0; j<4; j++)
                 System.out.print(Jardin[i][j]+ " ");
             System.out.print("\n");
         }    
-        
-        /*inicializarPoblacion();
-        evaluarPoblacion(2);
-        
-        for(i=0;i< Poblacion.size();i++){
-            System.out.println("Poblacion "+i+" esta es la aptitud "+ Poblacion.get(i).aptitud) ;
-        }
-        seleccionar();*/
-        //Poblacion.get(0).imprimirEstadisticas();
-        //algoritmoGenetico();
-       
     }    
 }
 
@@ -501,14 +448,10 @@ class Zombie{
         this.vida -= cant;
     }
     public void moverse(){
-        this.columna -= 1;
-        //System.out.println("el zombie "+this.id +" se movio a la columna: "+this.columna );
-       
-        
+        this.columna -= 1;   
     }
     public void setColumna(int columna){
         this.columna = columna;
-        //System.out.println("entro el zombie en la columna: "+this.columna );
     }
     
 }
@@ -534,7 +477,7 @@ class Individuo{
         int x;
         for (x=0;x<4;x++){
             this.cromosoma[x] = fila[x];
-            this.alive[x] = this.cromosoma[x] != 1;
+            this.alive[x] = this.cromosoma[x] != 0;
         }   
     }
     
@@ -548,19 +491,17 @@ class Individuo{
         int x;
         for (x=0;x<4;x++){
             this.cromosoma[x] = i.cromosoma[x];
-            this.alive[x] = this.cromosoma[x] != 1;
+            this.alive[x] = this.cromosoma[x] != 0;
         }  
         
     }
-    
-    
+  
     public void setAptitud(int cant){
         this.aptitud += cant;
     }
     
     public void killPlanta(int i){
         this.alive[i] = false;
-        //System.out.println("matamos una planta");
     }
     public void imprimirEstadisticas (){
         for (int i =0; i<4; i++){
