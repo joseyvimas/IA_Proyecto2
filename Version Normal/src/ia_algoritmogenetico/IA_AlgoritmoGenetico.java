@@ -17,6 +17,7 @@ public class IA_AlgoritmoGenetico {
     public static int TamPoblacion = 6;
     public static double ProbCruce = 0.7;
     public static double ProbMuta = 0.01;
+    public static boolean MalaSolucion =false;
     
     public static double RamdonNumber(int n){
         return (int) (Math.random() * n) + 1;
@@ -33,12 +34,14 @@ public class IA_AlgoritmoGenetico {
         return decimal;
     }
     public static void algoritmoGenetico (int ZombieVidaFila, int nrofila){
+        int iteracion =0;
         inicializarPoblacion();
         evaluarPoblacion(nrofila);
-        while(!solucion(ZombieVidaFila, nrofila)){
+        while(!solucion(ZombieVidaFila, nrofila, iteracion)){
             seleccionar();
             alterar();
             evaluarPoblacion(nrofila);
+            iteracion++;
         }
         return;
     }
@@ -95,7 +98,7 @@ public class IA_AlgoritmoGenetico {
             simulacion(i, ZombiesFila);
         }
     }
-    public static boolean solucion (int ZombieVidaFila, int nrofila){
+    public static boolean solucion (int ZombieVidaFila, int nrofila,int iteracion){
         //ZombieVidaFila tiene la suma de las vidas de todos los zombiez en la fila
         int i,j;
         nrofila -= 1;
@@ -106,6 +109,11 @@ public class IA_AlgoritmoGenetico {
                 }
                 return true;
             }
+        }
+        if(iteracion==26) {
+            //Caso limite ponla como sulocuin y prende el flag
+            MalaSolucion =true;
+            return true;
         }
         return false;
     }
@@ -352,8 +360,21 @@ public class IA_AlgoritmoGenetico {
                                 case 3:
                                     if (ZombiesFila.get(z).columna != i){
                                         if (canShootRepeater(ind,i)){
-                                            ZombiesFila.get(z).setVida(2);
-                                            Poblacion.get(ind).setAptitud(2);   
+                                            if(ZombiesFila.get(z).vida==1){
+                                                ZombiesFila.get(z).setVida(1);
+                                                Poblacion.get(ind).setAptitud(1);
+                                                for (int r=0; r<ZombiesFila.size(); r++){
+                                                    if (ZombiesFila.get(r).columna != W && ZombiesFila.get(r).vida > 0){
+                                                        ZombiesFila.get(r).setVida(1);
+                                                        Poblacion.get(ind).setAptitud(1);
+                                                        break;
+                                                    }
+                                                }
+                                            }else{
+                                                ZombiesFila.get(z).setVida(2);
+                                                Poblacion.get(ind).setAptitud(2);  
+                                            }
+                                             
                                         }
                                     }
                                     break;
@@ -425,6 +446,7 @@ public class IA_AlgoritmoGenetico {
         }
         
         //IMPRIMIR SOLUCION
+        if(MalaSolucion) System.out.println("No se encontro una solucion al problema inicial pero esta es una aproximacion a la solucion");
         int j;
         for (i=0; i<H; i++){
             for (j=0; j<4; j++)
