@@ -277,7 +277,7 @@ public class IA_AlgoritmoGenetico {
     public static boolean zombiesWin(List<Zombie> ZombiesFila){
         int i;
         for (i=0; i<ZombiesFila.size(); i++)
-           if (ZombiesFila.get(i).columna == -1) return true;
+           if (ZombiesFila.get(i).columna == 0) return true;
  
         return false;
     }
@@ -298,8 +298,12 @@ public class IA_AlgoritmoGenetico {
             int columna;
             for (z=0; z<ZombiesFila.size(); z++){
                 columna = ZombiesFila.get(z).columna;
-                if ((columna >= 0 && columna < 4) && (Poblacion.get(ind).cromosoma[columna] == 1 || Poblacion.get(ind).cromosoma[columna] == 2))
+                if ((columna >= 0 && columna < 4) && (Poblacion.get(ind).cromosoma[columna] == 1 || Poblacion.get(ind).cromosoma[columna] == 2)){
                     Poblacion.get(ind).killPlanta(columna); //Zombie ataca
+                }
+                if(columna == 0 && Poblacion.get(ind).cromosoma[columna] == 3 ){
+                    Poblacion.get(ind).killPlanta(columna); //Zombie ataca la mina en la posicion 0,0 y gana
+                }    
                 
             }
             
